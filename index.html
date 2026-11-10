@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#58cc02">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="images/icon-192.png">
+<title>קוֹרְאִים עִם תּוֹם</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Hebrew:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- מסך בית -->
+<section id="home" class="screen active">
+  <h1>קוֹרְאִים עִם תּוֹם</h1>
+  <div id="levels"></div>
+  <h2>הָאַלְבּוֹם שֶׁלִּי</h2>
+  <div id="album"></div>
+</section>
+
+<!-- מסך קריאה -->
+<section id="reader" class="screen">
+  <header class="reader-top">
+    <button id="homeBtn" class="icon-btn" aria-label="בית">🏠</button>
+    <div id="medals"></div>
+    <!-- כפתור השמעה מוסתר: צריך ללחוץ ולהחזיק -->
+    <button id="listenBtn" class="secret" aria-label="השמעה (לחיצה ארוכה)">
+      <svg viewBox="0 0 36 36"><circle class="ring" cx="18" cy="18" r="16"/></svg>
+      <span>👂</span>
+    </button>
+  </header>
+  <!-- טיימר בצד: כמה זמן נשאר לקרוא -->
+  <div id="timer">
+    <svg viewBox="0 0 100 100"><circle class="track" cx="50" cy="50" r="44"/><circle id="timerRing" cx="50" cy="50" r="44"/></svg>
+    <div id="timerText">15:00</div>
+    <div id="timerLabel">נִשְׁאַר</div>
+  </div>
+  <!-- מצב סיפור: הקטע שכבר נקרא נבנה כאן -->
+  <div id="story" class="hidden"><h3 id="storyTitle"></h3><p id="storyText"></p></div>
+  <div class="sentence-wrap"><p id="sentence"></p></div>
+  <button id="readBtn" class="big-btn">קָרָאתִי!</button>
+</section>
+
+<!-- חגיגה: מדליה / גביע -->
+<div id="celebrate" class="overlay"><div id="celebrateIcon"></div><div id="celebrateText"></div></div>
+
+<!-- כרטיס גירוד -->
+<section id="scratch" class="screen">
+  <div class="trophy">🏆</div>
+  <h2>כָּל הַכָּבוֹד! גָּרֵד וְגַלֵּה מִי מְחַכֶּה לְךָ</h2>
+  <div id="card">
+    <div id="cardPrize"><img id="prizeImg" alt=""><div id="prizeName"></div></div>
+    <canvas id="cardCanvas"></canvas>
+  </div>
+  <button id="doneBtn" class="big-btn hidden">לְאַלְבּוֹם</button>
+</section>
+
+<script src="content.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
