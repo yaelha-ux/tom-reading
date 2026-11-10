@@ -270,6 +270,22 @@ $('doneBtn').onclick = () => {
 
 renderHome();
 
+// כפתור התקנה: Chrome שולח beforeinstallprompt כשאפשר להתקין
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; });
+$('installBtn').onclick = async () => {
+  if (installPrompt) {
+    installPrompt.prompt();
+    await installPrompt.userChoice;
+    installPrompt = null;
+  } else {
+    $('installHelp').classList.remove('hidden');
+  }
+};
+const installed = () => window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
+if (installed()) $('installBtn').classList.add('hidden');
+window.addEventListener('appinstalled', () => $('installBtn').classList.add('hidden'));
+
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }

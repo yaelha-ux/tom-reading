@@ -45,6 +45,12 @@ h2 { font-size: 28px; margin: 24px 0 12px; text-align: center; }
   border-radius: 12px; padding: 0 8px; font-size: 18px;
 }
 
+.install-btn {
+  margin-top: 28px; background: #fff; border: 3px solid var(--accent); color: var(--accent-dark);
+  border-radius: 18px; font: inherit; font-size: 22px; font-weight: 700; padding: 10px 24px; cursor: pointer;
+}
+.install-help { font-size: 20px; max-width: 520px; text-align: center; line-height: 1.6; }
+
 /* קריאה */
 .reader-top { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .icon-btn { background: none; border: none; font-size: 40px; cursor: pointer; }
