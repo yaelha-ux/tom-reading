@@ -408,6 +408,21 @@ $('doneBtn').onclick = () => {
 
 renderHome();
 
+// מספר הגרסה מוצג בתחתית מסך הבית; להעלות יחד עם CACHE ב-sw.js
+const APP_VERSION = 12;
+$('version').textContent = 'גרסה ' + APP_VERSION;
+
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  navigator.serviceWorker.register('sw.js').then((reg) => {
+    // בודקים אם יש גרסה חדשה בכל פעם שחוזרים לאפליקציה (הטאבלט משאיר אותה פתוחה ברקע)
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update(); });
+  }).catch(() => {});
+  // גרסה חדשה השתלטה: טוענים מחדש פעם אחת, רק כשלא באמצע קריאה
+  let reloading = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (reloading) return;
+    reloading = true;
+    if ($('home').classList.contains('active')) location.reload();
+    else $('homeBtn').addEventListener('click', () => location.reload(), { once: true });
+  });
 }
