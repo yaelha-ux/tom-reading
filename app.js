@@ -140,7 +140,9 @@ function markRead() {
 
 // ---------- בדיקה במיקרופון (ניסיונית; דורשת אינטרנט) ----------
 // הזיהוי מחזיר טקסט בלי ניקוד, אז משווים מילים בלבד ובסלחנות.
-const plain = (s) => s.replace(/[֑-ׇ]/g, '').replace(/[^א-ת ]/g, ' ').trim().split(/\s+/).filter(Boolean);
+// אותיות סופיות הופכות לרגילות, כי "אַמְ" נשמע כמו "אם"
+const plain = (s) => s.replace(/[֑-ׇ]/g, '').replace(/[^א-ת ]/g, ' ')
+  .replace(/[ךםןףץ]/g, (c) => ({ ך: 'כ', ם: 'מ', ן: 'נ', ף: 'פ', ץ: 'צ' }[c])).trim().split(/\s+/).filter(Boolean);
 
 function editDistance(a, b) {
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
@@ -156,8 +158,11 @@ function matchWords(sentence, transcripts) {
   const heard = transcripts.flatMap(plain);
   // כתיב מלא/חסר: "עכשו" מול "עכשיו", לכן מתעלמים מ-ו/י בהשוואה
   const loose = (w) => w.replace(/[וי]/g, '');
+  // הברה של אות אחת ("בַּ"): הזיהוי מחזיר משהו כמו "בא" או "בה", אז מספיק שהמילה הקצרה תתחיל באותו צליל
+  const sound = (c) => ({ ק: 'כ', ט: 'ת', ע: 'א', ש: 'ס' }[c] || c);
   return plain(sentence).map((w) =>
-    heard.some((h) => h === w || loose(h) === loose(w) || (w.length > 2 && editDistance(loose(h), loose(w)) <= 1))
+    heard.some((h) => h === w || loose(h) === loose(w) || (w.length > 2 && editDistance(loose(h), loose(w)) <= 1)
+      || (w.length === 1 && h.length <= 3 && sound(h[0]) === sound(w)))
   );
 }
 
@@ -409,7 +414,7 @@ $('doneBtn').onclick = () => {
 renderHome();
 
 // מספר הגרסה מוצג בתחתית מסך הבית; להעלות יחד עם CACHE ב-sw.js
-const APP_VERSION = 12;
+const APP_VERSION = 13;
 $('version').textContent = 'גרסה ' + APP_VERSION;
 
 if ('serviceWorker' in navigator) {
