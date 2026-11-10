@@ -163,7 +163,7 @@ $('micBtn').onclick = () => {
       $('micMsg').textContent = 'קָרָאתָ נָכוֹן! 🎉';
       setTimeout(markRead, 900);
     } else {
-      $('micMsg').textContent = 'בּוֹא נְנַסֶּה שׁוּב 💪';
+      sadBear();
     }
   };
   rec.onerror = (e) => {
@@ -186,6 +186,37 @@ function celebrate(icon, text, then) {
   confetti(icon === '🏆' ? 80 : 25);
   playChime(icon === '🏆');
   setTimeout(() => { $('celebrate').classList.remove('show'); then(); }, icon === '🏆' ? 2200 : 1300);
+}
+
+// קריאה בקול לא הצליחה: דוב בוכה וצליל עצוב, ואז חוזרים לאותו משפט
+function sadBear() {
+  $('celebrateIcon').innerHTML =
+    '<div class="sad-bear"><img src="images/bear.png" alt="">' +
+    '<span class="tear" style="left:38%"></span><span class="tear" style="left:70%;animation-delay:.5s"></span></div>';
+  $('celebrateText').textContent = 'בּוֹא נְנַסֶּה שׁוּב 💪';
+  $('celebrate').classList.add('show');
+  playSad();
+  setTimeout(() => {
+    $('celebrate').classList.remove('show');
+    $('micMsg').textContent = 'בּוֹא נְנַסֶּה שׁוּב 💪';
+  }, 2200);
+}
+
+function playSad() {
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    [392, 349, 311, 262].forEach((f, i) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = 'sine';
+      const t = audioCtx.currentTime + i * 0.3;
+      o.frequency.setValueAtTime(f, t);
+      o.frequency.linearRampToValueAtTime(f * 0.94, t + 0.3);
+      g.gain.setValueAtTime(0.25, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.45);
+      o.connect(g).connect(audioCtx.destination);
+      o.start(t); o.stop(t + 0.45);
+    });
+  } catch {}
 }
 
 function confetti(count) {
@@ -332,31 +363,6 @@ $('doneBtn').onclick = () => {
 };
 
 renderHome();
-
-// כפתור התקנה: Chrome שולח beforeinstallprompt כשאפשר להתקין
-let installPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; });
-$('installBtn').onclick = async () => {
-  if (installPrompt) {
-    try {
-      installPrompt.prompt();
-      await installPrompt.userChoice;
-      installPrompt = null;
-      return;
-    } catch {}
-  }
-  // אין חלון התקנה מ-Chrome: מציגים הוראות באמצע המסך
-  alert(
-    'כדי להתקין:\n' +
-    '1. ודאו שהדף פתוח בדפדפן Chrome (לא מתוך וואטסאפ או מייל).\n' +
-    '2. לחצו על ⋮ (שלוש נקודות) למעלה.\n' +
-    '3. בחרו "הוספה למסך הבית" או "התקנת אפליקציה".\n\n' +
-    'בדפדפן סמסונג: ☰ ← "הוסף דף אל" ← "מסך הבית".'
-  );
-};
-const installed = () => window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
-if (installed()) $('installBtn').classList.add('hidden');
-window.addEventListener('appinstalled', () => $('installBtn').classList.add('hidden'));
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
