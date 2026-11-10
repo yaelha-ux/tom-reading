@@ -7,7 +7,12 @@ function loadState() {
 function saveState() {
   try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch {}
 }
-const state = Object.assign({ collected: {}, passageIndex: {} }, loadState());
+// רק האלבום נשמר לתמיד; ההתקדמות בשלבים נשמרת בזיכרון ומתאפסת ברענון הטאב
+const state = { collected: loadState().collected || {} };
+const passageIndex = {};
+// לכל שלב: איפה עצרנו (session + current), כדי לחזור לשם אחרי מסך הבית
+const saved = {};
+const finishedLevels = {};
 
 let current = null; // { level, passage, index }
 
@@ -23,7 +28,10 @@ function renderHome() {
     const b = document.createElement('button');
     b.className = 'level-btn';
     b.style.background = level.color;
-    b.innerHTML = `${level.name}<small>${level.minutes} דַּקּוֹת</small>`;
+    const s = saved[level.id];
+    const sub = finishedLevels[level.id] && !s ? '✓ סִיַּמְתָּ'
+      : s ? `נִשְׁאַר ${formatTime(s.session.remaining)}` : `${level.minutes} דַּקּוֹת`;
+    b.innerHTML = `${level.name}<small>${sub}</small>`;
     b.onclick = () => startLevel(level);
     $('levels').appendChild(b);
   });
@@ -65,6 +73,16 @@ albumTitle.addEventListener('contextmenu', (e) => e.preventDefault());
 let session = null;
 
 function startLevel(level) {
+  const s = saved[level.id];
+  if (s) {
+    // ממשיכים מאיפה שעצרנו
+    ({ session, current } = s);
+    updateTimer();
+    speechWarmup();
+    renderSentence();
+    show('reader');
+    return;
+  }
   session = { total: level.minutes * 60, remaining: level.minutes * 60, timeUp: false };
   updateTimer();
   speechWarmup();
@@ -73,10 +91,10 @@ function startLevel(level) {
 
 function nextPassage(level) {
   // מתחלפים בין הקטעים של כל רמה
-  const i = (state.passageIndex[level.id] || 0) % level.passages.length;
-  state.passageIndex[level.id] = i + 1;
-  saveState();
+  const i = (passageIndex[level.id] || 0) % level.passages.length;
+  passageIndex[level.id] = i + 1;
   current = { level, passage: level.passages[i], index: 0 };
+  saved[level.id] = { session, current };
   renderSentence();
   show('reader');
 }
@@ -208,7 +226,7 @@ function startListening() {
   rec.start();
 }
 
-$('homeBtn').onclick = () => { session = null; autoListen = false; renderHome(); };
+$('homeBtn').onclick = () => { autoListen = false; renderHome(); };
 
 function celebrate(icon, text, then) {
   $('celebrateIcon').textContent = icon;
@@ -407,14 +425,19 @@ function startScratch() {
 }
 
 $('doneBtn').onclick = () => {
-  if (session.timeUp) { session = null; renderHome(); }
+  if (session.timeUp) {
+    delete saved[current.level.id];
+    finishedLevels[current.level.id] = true;
+    session = null;
+    renderHome();
+  }
   else nextPassage(current.level);
 };
 
 renderHome();
 
 // מספר הגרסה מוצג בתחתית מסך הבית; להעלות יחד עם CACHE ב-sw.js
-const APP_VERSION = 13;
+const APP_VERSION = 14;
 $('version').textContent = 'גרסה ' + APP_VERSION;
 
 if ('serviceWorker' in navigator) {
@@ -427,6 +450,8 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (reloading) return;
     reloading = true;
+    // לא טוענים מחדש אם יש התקדמות שתימחק; הגרסה החדשה תגיע ברענון הבא
+    if (Object.keys(saved).length) return;
     if ($('home').classList.contains('active')) location.reload();
     else $('homeBtn').addEventListener('click', () => location.reload(), { once: true });
   });
