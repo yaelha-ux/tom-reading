@@ -40,6 +40,26 @@ function renderHome() {
   show('home');
 }
 
+// איפוס אלבום מוסתר להורים: לחיצה ארוכה (2 שניות) על כותרת האלבום ואז קוד
+const PARENT_CODE = '2209';
+let resetTimer;
+const albumTitle = $('albumTitle');
+albumTitle.addEventListener('pointerdown', () => {
+  resetTimer = setTimeout(() => {
+    const code = prompt('קוד הורים:');
+    if (code === null) return;
+    if (code.trim() !== PARENT_CODE) { alert('קוד שגוי'); return; }
+    if (!confirm('לאפס את האלבום? כל הדמויות שנאספו יימחקו.')) return;
+    state.collected = {};
+    saveState();
+    renderHome();
+  }, 2000);
+});
+['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) =>
+  albumTitle.addEventListener(ev, () => clearTimeout(resetTimer))
+);
+albumTitle.addEventListener('contextmenu', (e) => e.preventDefault());
+
 // ---------- קריאה ----------
 // session: אימון אחד לפי זמן הרמה; כשקטע נגמר והזמן עוד לא, ממשיכים לקטע הבא
 let session = null;
