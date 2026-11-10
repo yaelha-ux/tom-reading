@@ -131,7 +131,10 @@ function markRead() {
   const text = session.timeUp ? 'סִיַּמְתָּ אֶת הָאִמּוּן!' : finished ? 'סִיַּמְתָּ אֶת הַקֶּטַע!' : 'יָפֶה מְאוֹד!';
   celebrate(finished ? '🏆' : '🥇', text, () => {
     if (finished) startScratch();
-    else renderSentence();
+    else {
+      renderSentence();
+      if (autoListen && Recognition) startListening();
+    }
   });
 }
 
@@ -159,9 +162,12 @@ function matchWords(sentence, transcripts) {
 }
 
 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let listening = false;
-$('micBtn').onclick = () => {
-  if (!Recognition) { $('micMsg').textContent = 'הַדַּפְדְּפָן לֹא תּוֹמֵךְ בְּמִיקְרוֹפוֹן, לְחַץ "קָרָאתִי!"'; return; }
+// אחרי קריאה מוצלחת במיקרופון, המשפט הבא מתחיל להקשיב לבד
+let listening = false, autoListen = false;
+$('micBtn').onclick = () => startListening();
+
+function startListening() {
+  if (!Recognition) { $('micMsg').textContent = 'הַדַּפְדְּפָן לֹא תּוֹמֵךְ בְּמִיקְרוֹפוֹן, לְחַץ "הַבָּא"'; return; }
   if (listening) return;
   const rec = new Recognition();
   rec.lang = 'he-IL';
@@ -181,20 +187,23 @@ $('micBtn').onclick = () => {
     const score = ok.filter(Boolean).length / ok.length;
     if (score >= 0.6) {
       $('micMsg').textContent = 'קָרָאתָ נָכוֹן! 🎉';
+      autoListen = true;
       setTimeout(markRead, 900);
     } else {
+      autoListen = false;
       sadBear();
     }
   };
   rec.onerror = (e) => {
+    autoListen = false;
     $('micMsg').textContent = e.error === 'not-allowed' ? 'צָרִיךְ לְאַשֵּׁר מִיקְרוֹפוֹן' :
-      e.error === 'network' ? 'אֵין אִינְטֶרְנֶט, לְחַץ "קָרָאתִי!"' : 'לֹא שָׁמַעְתִּי, נְנַסֶּה שׁוּב?';
+      e.error === 'network' ? 'אֵין אִינְטֶרְנֶט, לְחַץ "הַבָּא"' : 'לֹא שָׁמַעְתִּי, נְנַסֶּה שׁוּב?';
   };
   rec.onend = () => { listening = false; $('micBtn').classList.remove('listening'); };
   rec.start();
-};
+}
 
-$('homeBtn').onclick = () => { session = null; renderHome(); };
+$('homeBtn').onclick = () => { session = null; autoListen = false; renderHome(); };
 
 function celebrate(icon, text, then) {
   $('celebrateIcon').textContent = icon;
@@ -208,11 +217,26 @@ function celebrate(icon, text, then) {
   setTimeout(() => { $('celebrate').classList.remove('show'); then(); }, icon === '🏆' ? 2200 : 1300);
 }
 
+// דוב עצוב מצויר: גבות מורמות באמצע, עיניים עצומות כלפי מטה, פה עצוב ודמעות
+const SAD_BEAR_SVG = `
+<svg class="sad-bear" viewBox="0 0 240 240" fill="#fff" stroke="#1a1a1a" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+  <circle cx="58" cy="62" r="30"/><circle cx="58" cy="62" r="14" fill="#f6d2c2"/>
+  <circle cx="182" cy="62" r="30"/><circle cx="182" cy="62" r="14" fill="#f6d2c2"/>
+  <ellipse cx="120" cy="128" rx="92" ry="86"/>
+  <path d="M70 92 L100 82" /><path d="M170 92 L140 82"/>
+  <path d="M76 116 Q90 106 104 116" fill="none"/><path d="M136 116 Q150 106 164 116" fill="none"/>
+  <ellipse cx="120" cy="164" rx="40" ry="32"/>
+  <ellipse cx="120" cy="150" rx="13" ry="9" fill="#1a1a1a"/>
+  <path d="M100 186 Q120 168 140 186" fill="none"/>
+  <ellipse cx="68" cy="146" rx="12" ry="7" fill="#f9b3b3" stroke="none"/>
+  <ellipse cx="172" cy="146" rx="12" ry="7" fill="#f9b3b3" stroke="none"/>
+  <path class="tear" d="M90 122 q-7 12 0 16 q7 -4 0 -16z" fill="#4fc3f7" stroke="#2a9fd0" stroke-width="3"/>
+  <path class="tear t2" d="M150 122 q-7 12 0 16 q7 -4 0 -16z" fill="#4fc3f7" stroke="#2a9fd0" stroke-width="3"/>
+</svg>`;
+
 // קריאה בקול לא הצליחה: דוב בוכה וצליל עצוב, ואז חוזרים לאותו משפט
 function sadBear() {
-  $('celebrateIcon').innerHTML =
-    '<div class="sad-bear"><img src="images/bear.png" alt="">' +
-    '<span class="tear" style="left:38%"></span><span class="tear" style="left:70%;animation-delay:.5s"></span></div>';
+  $('celebrateIcon').innerHTML = SAD_BEAR_SVG;
   $('celebrateText').textContent = 'בּוֹא נְנַסֶּה שׁוּב 💪';
   $('celebrate').classList.add('show');
   playSad();

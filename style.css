@@ -110,6 +110,12 @@ h2 { font-size: 28px; margin: 24px 0 12px; text-align: center; }
 
 /* בדיקה במיקרופון */
 .actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.actions { align-items: center; }
+.next-btn {
+  background: #fff; color: var(--accent-dark); border: 3px solid var(--accent); border-radius: 16px;
+  font: inherit; font-size: 24px; font-weight: 700; padding: 8px 22px; cursor: pointer;
+}
+.next-btn:active { transform: translateY(2px); }
 .mic-btn { background: #4fc3f7; box-shadow: 0 8px 0 #2a9fd0; }
 .mic-btn:active { box-shadow: 0 2px 0 #2a9fd0; }
 .mic-btn.listening { animation: pulse 1s infinite; }
@@ -127,14 +133,11 @@ h2 { font-size: 28px; margin: 24px 0 12px; text-align: center; }
 .overlay.show { display: flex; }
 #celebrateIcon { font-size: 200px; animation: pop .6s cubic-bezier(.3,1.6,.5,1); }
 #celebrateText { font-size: 48px; font-weight: 700; margin-top: 10px; }
-.sad-bear { position: relative; width: 200px; margin: auto; animation: sob .5s ease-in-out infinite; }
-.sad-bear img { width: 100%; display: block; mix-blend-mode: multiply; }
-.tear {
-  position: absolute; top: 33%; width: 14px; height: 20px; background: #4fc3f7;
-  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%; animation: drip 1s ease-in infinite;
-}
-@keyframes sob { 50% { transform: translateY(4px) rotate(-2deg); } }
-@keyframes drip { from { transform: translateY(0); opacity: 1; } to { transform: translateY(90px); opacity: 0; } }
+.sad-bear { width: 220px; height: 220px; display: block; margin: auto; animation: sob .6s ease-in-out infinite; transform-origin: 50% 90%; }
+.sad-bear .tear { animation: drip 1.1s ease-in infinite; }
+.sad-bear .t2 { animation-delay: .55s; }
+@keyframes sob { 50% { transform: translateY(5px) rotate(-3deg); } }
+@keyframes drip { from { transform: translateY(0); opacity: 1; } to { transform: translateY(70px); opacity: 0; } }
 @keyframes pop { from { transform: scale(0) rotate(-30deg); } to { transform: scale(1) rotate(0); } }
 .confetti { position: fixed; top: -20px; width: 14px; height: 20px; z-index: 11; animation: fall linear forwards; }
 @keyframes fall { to { transform: translateY(110vh) rotate(720deg); } }
