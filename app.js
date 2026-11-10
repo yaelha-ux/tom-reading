@@ -86,7 +86,9 @@ setInterval(() => {
 
 function renderSentence() {
   const { level, passage, index } = current;
-  $('sentence').textContent = passage.sentences[index];
+  // כל מילה ב-span כדי לצבוע מילים שזוהו במיקרופון
+  $('sentence').innerHTML = passage.sentences[index].split(' ').map((w) => `<span class="w">${w}</span>`).join(' ');
+  $('micMsg').textContent = '';
   $('story').classList.toggle('hidden', !level.storyMode);
   if (level.storyMode) {
     $('storyTitle').textContent = passage.title;
@@ -99,7 +101,9 @@ function renderSentence() {
     .join('');
 }
 
-$('readBtn').onclick = () => {
+$('readBtn').onclick = () => markRead();
+
+function markRead() {
   const { passage } = current;
   current.index++;
   // נגמר הזמן? מסיימים במשפט הזה ומקבלים גביע
@@ -109,6 +113,66 @@ $('readBtn').onclick = () => {
     if (finished) startScratch();
     else renderSentence();
   });
+}
+
+// ---------- בדיקה במיקרופון (ניסיונית; דורשת אינטרנט) ----------
+// הזיהוי מחזיר טקסט בלי ניקוד, אז משווים מילים בלבד ובסלחנות.
+const plain = (s) => s.replace(/[֑-ׇ]/g, '').replace(/[^א-ת ]/g, ' ').trim().split(/\s+/).filter(Boolean);
+
+function editDistance(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++)
+    for (let j = 1; j <= b.length; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+
+// מחזיר לכל מילה במשפט אם נשמעה באחת מהאפשרויות שהזיהוי החזיר
+function matchWords(sentence, transcripts) {
+  const heard = transcripts.flatMap(plain);
+  // כתיב מלא/חסר: "עכשו" מול "עכשיו", לכן מתעלמים מ-ו/י בהשוואה
+  const loose = (w) => w.replace(/[וי]/g, '');
+  return plain(sentence).map((w) =>
+    heard.some((h) => h === w || loose(h) === loose(w) || (w.length > 2 && editDistance(loose(h), loose(w)) <= 1))
+  );
+}
+
+const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (Recognition) $('micBtn').classList.remove('hidden');
+
+let listening = false;
+$('micBtn').onclick = () => {
+  if (listening) return;
+  const rec = new Recognition();
+  rec.lang = 'he-IL';
+  rec.maxAlternatives = 5;
+  rec.interimResults = false;
+  listening = true;
+  $('micBtn').classList.add('listening');
+  $('micMsg').textContent = 'מַקְשִׁיבָה... 👂';
+
+  rec.onresult = (e) => {
+    const transcripts = Array.from(e.results[0]).map((r) => r.transcript);
+    const sentence = current.passage.sentences[current.index];
+    const ok = matchWords(sentence, transcripts);
+    // צובעים כל מילה לפי הזיהוי (מדלגים על סימני פיסוק נפרדים)
+    const spans = [...$('sentence').querySelectorAll('.w')].filter((s) => plain(s.textContent).length);
+    spans.forEach((s, i) => s.classList.add(ok[i] ? 'ok' : 'miss'));
+    const score = ok.filter(Boolean).length / ok.length;
+    if (score >= 0.6) {
+      $('micMsg').textContent = 'קָרָאתָ נָכוֹן! 🎉';
+      setTimeout(markRead, 900);
+    } else {
+      $('micMsg').textContent = 'בּוֹא נְנַסֶּה שׁוּב 💪';
+    }
+  };
+  rec.onerror = (e) => {
+    $('micMsg').textContent = e.error === 'not-allowed' ? 'צָרִיךְ לְאַשֵּׁר מִיקְרוֹפוֹן' :
+      e.error === 'network' ? 'אֵין אִינְטֶרְנֶט, לְחַץ "קָרָאתִי!"' : 'לֹא שָׁמַעְתִּי, נְנַסֶּה שׁוּב?';
+  };
+  rec.onend = () => { listening = false; $('micBtn').classList.remove('listening'); };
+  rec.start();
 };
 
 $('homeBtn').onclick = () => { session = null; renderHome(); };
