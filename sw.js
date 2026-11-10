@@ -1,6 +1,6 @@
 // שומר את האפליקציה בטאבלט כדי שתעבוד גם בלי אינטרנט.
 // כשמשנים קבצים, מעלים את מספר הגרסה כדי שהטאבלט יקבל את העדכון.
-const CACHE = 'tom-reading-v4';
+const CACHE = 'tom-reading-v5';
 const FILES = [
   './', 'index.html', 'style.css', 'app.js', 'content.js', 'manifest.json',
   'images/turtle.png', 'images/fox.png', 'images/rabbit.png', 'images/bear.png',
@@ -8,7 +8,9 @@ const FILES = [
 ];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));
+  e.waitUntil(caches.open(CACHE).then((c) =>
+    c.addAll(FILES.map((f) => new Request(f, { cache: 'no-cache' })))
+  ));
   self.skipWaiting();
 });
 
@@ -23,7 +25,8 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request).then((res) => {
+    // no-cache: לא להשתמש בעותק הישן ש-GitHub מבקש לשמור 10 דקות
+    fetch(e.request, { cache: e.request.url.startsWith(self.location.origin) ? 'no-cache' : 'default' }).then((res) => {
       if (res.ok || res.type === 'opaque') {
         const copy = res.clone();
         caches.open(CACHE).then((c) => c.put(e.request, copy));
