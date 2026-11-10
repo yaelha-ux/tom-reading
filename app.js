@@ -139,10 +139,9 @@ function matchWords(sentence, transcripts) {
 }
 
 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-if (Recognition) $('micBtn').classList.remove('hidden');
-
 let listening = false;
 $('micBtn').onclick = () => {
+  if (!Recognition) { $('micMsg').textContent = 'הַדַּפְדְּפָן לֹא תּוֹמֵךְ בְּמִיקְרוֹפוֹן, לְחַץ "קָרָאתִי!"'; return; }
   if (listening) return;
   const rec = new Recognition();
   rec.lang = 'he-IL';

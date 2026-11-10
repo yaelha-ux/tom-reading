@@ -1,6 +1,6 @@
 // שומר את האפליקציה בטאבלט כדי שתעבוד גם בלי אינטרנט.
 // כשמשנים קבצים, מעלים את מספר הגרסה כדי שהטאבלט יקבל את העדכון.
-const CACHE = 'tom-reading-v5';
+const CACHE = 'tom-reading-v6';
 const FILES = [
   './', 'index.html', 'style.css', 'app.js', 'content.js', 'manifest.json',
   'images/turtle.png', 'images/fox.png', 'images/rabbit.png', 'images/bear.png',

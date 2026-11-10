@@ -69,7 +69,7 @@ h2 { font-size: 28px; margin: 24px 0 12px; text-align: center; }
 
 /* טיימר */
 #timer {
-  position: fixed; left: 20px; top: 50%; transform: translateY(-50%);
+  position: fixed; left: 20px; bottom: 20px;
   width: 130px; height: 130px; display: flex; flex-direction: column;
   align-items: center; justify-content: center; z-index: 5;
 }
@@ -82,7 +82,7 @@ h2 { font-size: 28px; margin: 24px 0 12px; text-align: center; }
 #timer.low #timerRing { stroke: #ffb347; }
 #timer.done #timerRing { stroke: var(--accent); }
 @media (max-width: 900px) {
-  #timer { top: auto; bottom: 20px; transform: none; width: 100px; height: 100px; }
+  #timer { width: 100px; height: 100px; }
   #timerText { font-size: 26px; }
 }
 
