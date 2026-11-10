@@ -339,12 +339,21 @@ let installPrompt = null;
 window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installPrompt = e; });
 $('installBtn').onclick = async () => {
   if (installPrompt) {
-    installPrompt.prompt();
-    await installPrompt.userChoice;
-    installPrompt = null;
-  } else {
-    $('installHelp').classList.remove('hidden');
+    try {
+      installPrompt.prompt();
+      await installPrompt.userChoice;
+      installPrompt = null;
+      return;
+    } catch {}
   }
+  // אין חלון התקנה מ-Chrome: מציגים הוראות באמצע המסך
+  alert(
+    'כדי להתקין:\n' +
+    '1. ודאו שהדף פתוח בדפדפן Chrome (לא מתוך וואטסאפ או מייל).\n' +
+    '2. לחצו על ⋮ (שלוש נקודות) למעלה.\n' +
+    '3. בחרו "הוספה למסך הבית" או "התקנת אפליקציה".\n\n' +
+    'בדפדפן סמסונג: ☰ ← "הוסף דף אל" ← "מסך הבית".'
+  );
 };
 const installed = () => window.matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches;
 if (installed()) $('installBtn').classList.add('hidden');
