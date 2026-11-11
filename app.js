@@ -134,6 +134,7 @@ function renderSentence() {
       .map((s, i) => `<span${i === index - 1 ? ' class="fresh"' : ''}>${s} </span>`).join('');
     $('story').scrollTop = $('story').scrollHeight;
   }
+  resetMicBtn();
   newSecret();
   $('medals').innerHTML = passage.sentences
     .map((_, i) => (i < index ? '<span>🥇</span>' : `<span class="dot${i === index ? ' now' : ''}"></span>`))
@@ -151,7 +152,7 @@ function markRead() {
     if (finished) startScratch();
     else {
       renderSentence();
-      if (autoListen && Recognition) startListening();
+      if (autoListen && Recognition && !current.level.noMic) startListening();
     }
   });
 }
@@ -189,12 +190,13 @@ const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 let listening = false, autoListen = false;
 const MIC_LABEL = '🎤 קְרָא בְּקוֹל';
 // לחיצה ראשונה מתחילה להקשיב; אחרי 3 שניות הכפתור הופך ל"סִיַּמְתִּי" ולחיצה עליו בודקת
-$('micBtn').onclick = () => (listening ? stopListening() : startListening());
+$('micBtn').onclick = () => (current.level.noMic ? markRead() : listening ? stopListening() : startListening());
 
 let rec = null, doneTimer;
 function resetMicBtn() {
   clearTimeout(doneTimer);
-  $('micBtn').textContent = MIC_LABEL;
+  $('micBtn').textContent = current && current.level.noMic ? 'קָרָאתִי ✓' : MIC_LABEL;
+  $('micBtn').classList.toggle('mic-btn', !(current && current.level.noMic));
   $('micBtn').classList.remove('listening', 'done-mode');
 }
 // עוצרים בלי לבדוק (יציאה לבית / "הבא" של ההורים)
@@ -476,7 +478,7 @@ $('doneBtn').onclick = () => {
 renderHome();
 
 // מספר הגרסה מוצג בתחתית מסך הבית; להעלות יחד עם CACHE ב-sw.js
-const APP_VERSION = 25;
+const APP_VERSION = 26;
 $('version').textContent = 'גרסה ' + APP_VERSION;
 
 if ('serviceWorker' in navigator) {
