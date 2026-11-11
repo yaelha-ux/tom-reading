@@ -1,6 +1,6 @@
 // שומר את האפליקציה בטאבלט כדי שתעבוד גם בלי אינטרנט.
 // כשמשנים קבצים, מעלים את מספר הגרסה כדי שהטאבלט יקבל את העדכון.
-const CACHE = 'tom-reading-v27';
+const CACHE = 'tom-reading-v28';
 const FILES = [
   './', 'index.html', 'style.css', 'app.js', 'content.js', 'manifest.json',
   ...['fox', 'bear', 'rabbit', 'turtle', 'owl', 'deer', 'hedgehog', 'lion'].map((c) => `images/c-${c}.png`),
