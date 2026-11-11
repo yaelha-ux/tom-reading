@@ -259,12 +259,12 @@ function startListening() {
   rec.start();
 }
 
-// "הַבָּא" להורים בלבד: לחיצה ארוכה של 3 שניות על שורת המדליות
+// "הַבָּא" להורים בלבד: חץ קטן וחיוור בפינה השמאלית העליונה, צריך להחזיק 2 שניות
 let nextTimer;
-const medals = $('medals');
-medals.addEventListener('pointerdown', () => { nextTimer = setTimeout(() => { cancelListening(); autoListen = false; markRead(); }, 3000); });
-['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => medals.addEventListener(ev, () => clearTimeout(nextTimer)));
-medals.addEventListener('contextmenu', (e) => e.preventDefault());
+const parentNext = $('parentNext');
+parentNext.addEventListener('pointerdown', () => { nextTimer = setTimeout(() => { cancelListening(); autoListen = false; markRead(); }, 2000); });
+['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => parentNext.addEventListener(ev, () => clearTimeout(nextTimer)));
+parentNext.addEventListener('contextmenu', (e) => e.preventDefault());
 
 $('homeBtn').onclick = () => { autoListen = false; cancelListening(); renderHome(); };
 
@@ -470,7 +470,7 @@ $('doneBtn').onclick = () => {
 renderHome();
 
 // מספר הגרסה מוצג בתחתית מסך הבית; להעלות יחד עם CACHE ב-sw.js
-const APP_VERSION = 21;
+const APP_VERSION = 22;
 $('version').textContent = 'גרסה ' + APP_VERSION;
 
 if ('serviceWorker' in navigator) {
