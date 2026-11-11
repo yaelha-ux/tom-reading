@@ -127,7 +127,8 @@ h2 { font-size: 28px; margin: 24px 0 12px; text-align: center; }
 .mic-btn:active { box-shadow: 0 2px 0 #2a9fd0; }
 .mic-btn.listening { animation: pulse 1s infinite; }
 .mic-btn.done-mode { background: var(--accent); box-shadow: 0 8px 0 var(--accent-dark); animation: none; }
-.parent-next { background: none; border: none; font-size: 22px; color: #d8cfb8; padding: 6px 10px; cursor: pointer; touch-action: none; }
+.parent-next { font-size: 14px; color: #d8cfb8; padding: 6px 10px; }
+#medals > * { cursor: pointer; }
 @keyframes pulse { 50% { transform: scale(1.06); } }
 #micMsg { font-size: 30px; font-weight: 700; min-height: 44px; margin: 4px 0 0; color: #c07a1c; }
 #sentence .w { transition: color .3s; }

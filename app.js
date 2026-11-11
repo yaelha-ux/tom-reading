@@ -134,6 +134,7 @@ function renderSentence() {
       .map((s, i) => `<span${i === index - 1 ? ' class="fresh"' : ''}>${s} </span>`).join('');
     $('story').scrollTop = $('story').scrollHeight;
   }
+  newSecret();
   $('medals').innerHTML = passage.sentences
     .map((_, i) => (i < index ? '<span>🥇</span>' : `<span class="dot${i === index ? ' now' : ''}"></span>`))
     .join('');
@@ -259,12 +260,22 @@ function startListening() {
   rec.start();
 }
 
-// "הַבָּא" להורים בלבד: חץ קטן וחיוור בפינה השמאלית העליונה, צריך להחזיק שנייה
-let nextTimer;
-const parentNext = $('parentNext');
-parentNext.addEventListener('pointerdown', () => { nextTimer = setTimeout(() => { cancelListening(); autoListen = false; markRead(); }, 1000); });
-['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => parentNext.addEventListener(ev, () => clearTimeout(nextTimer)));
-parentNext.addEventListener('contextmenu', (e) => e.preventDefault());
+// "הַבָּא" להורים בלבד: מספר קטן בפינה אומר על איזה עיגול (מימין) ללחוץ.
+// לחיצה על עיגול אחר מגרילה מספר חדש, כך שלחיצות אקראיות של תום לא מקדמות
+let secretSlot = 1;
+function newSecret() {
+  const n = current ? current.passage.sentences.length : 8;
+  let next;
+  do next = 1 + Math.floor(Math.random() * n); while (n > 1 && next === secretSlot);
+  secretSlot = next;
+  $('parentNext').textContent = secretSlot;
+}
+$('medals').addEventListener('click', (e) => {
+  const slot = [...$('medals').children].indexOf(e.target.closest('#medals > *')) + 1;
+  if (!slot) return;
+  if (slot === secretSlot) { cancelListening(); autoListen = false; markRead(); }
+  newSecret();
+});
 
 $('homeBtn').onclick = () => { autoListen = false; cancelListening(); renderHome(); };
 
@@ -465,7 +476,7 @@ $('doneBtn').onclick = () => {
 renderHome();
 
 // מספר הגרסה מוצג בתחתית מסך הבית; להעלות יחד עם CACHE ב-sw.js
-const APP_VERSION = 24;
+const APP_VERSION = 25;
 $('version').textContent = 'גרסה ' + APP_VERSION;
 
 if ('serviceWorker' in navigator) {
