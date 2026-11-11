@@ -259,10 +259,10 @@ function startListening() {
   rec.start();
 }
 
-// "הַבָּא" להורים בלבד: חץ קטן וחיוור בפינה השמאלית העליונה, צריך להחזיק 2 שניות
+// "הַבָּא" להורים בלבד: חץ קטן וחיוור בפינה השמאלית העליונה, צריך להחזיק שנייה
 let nextTimer;
 const parentNext = $('parentNext');
-parentNext.addEventListener('pointerdown', () => { nextTimer = setTimeout(() => { cancelListening(); autoListen = false; markRead(); }, 2000); });
+parentNext.addEventListener('pointerdown', () => { nextTimer = setTimeout(() => { cancelListening(); autoListen = false; markRead(); }, 1000); });
 ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => parentNext.addEventListener(ev, () => clearTimeout(nextTimer)));
 parentNext.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -470,7 +470,7 @@ $('doneBtn').onclick = () => {
 renderHome();
 
 // מספר הגרסה מוצג בתחתית מסך הבית; להעלות יחד עם CACHE ב-sw.js
-const APP_VERSION = 22;
+const APP_VERSION = 23;
 $('version').textContent = 'גרסה ' + APP_VERSION;
 
 if ('serviceWorker' in navigator) {
