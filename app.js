@@ -41,8 +41,8 @@ function renderHome() {
     const n = state.collected[c.id] || 0;
     const slot = document.createElement('div');
     slot.className = 'album-slot' + (n ? '' : ' locked');
-    slot.style.background = n ? c.bg : '#eee';
-    slot.innerHTML = `<img src="${c.img}" alt="">${n ? c.name : '?'}${n > 1 ? `<span class="count">×${n}</span>` : ''}`;
+    
+    slot.innerHTML = `<img src="${c.img}" alt="${n ? c.name : ''}">${n ? '' : '<span class="q">?</span>'}${n > 1 ? `<span class="count">×${n}</span>` : ''}`;
     $('album').appendChild(slot);
   });
   show('home');
@@ -404,8 +404,9 @@ $('listenBtn').onclick = () => speak(current.passage.sentences[current.index]);
 // ---------- כרטיס גירוד ----------
 function pickPrize() {
   // מעדיפים דמות שעוד לא נאספה
-  const missing = CHARACTERS.filter((c) => !state.collected[c.id]);
-  const pool = missing.length ? missing : CHARACTERS;
+  const missing = CHARACTERS.filter((c) => !state.collected[c.id] && !c.last);
+  const king = CHARACTERS.find((c) => c.last);
+  const pool = missing.length ? missing : !state.collected[king.id] ? [king] : CHARACTERS;
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -413,7 +414,6 @@ function startScratch() {
   const prize = pickPrize();
   $('prizeImg').src = prize.img;
   $('prizeName').textContent = prize.name;
-  $('cardPrize').style.background = prize.bg;
   $('doneBtn').classList.add('hidden');
   $('doneBtn').textContent = session.timeUp ? 'לְאַלְבּוֹם' : 'לַקֶּטַע הַבָּא ←';
   show('scratch');
@@ -478,7 +478,7 @@ $('doneBtn').onclick = () => {
 renderHome();
 
 // מספר הגרסה מוצג בתחתית מסך הבית; להעלות יחד עם CACHE ב-sw.js
-const APP_VERSION = 26;
+const APP_VERSION = 27;
 $('version').textContent = 'גרסה ' + APP_VERSION;
 
 if ('serviceWorker' in navigator) {

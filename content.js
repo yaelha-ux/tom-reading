@@ -131,8 +131,13 @@ const LEVELS = [
 ];
 
 const CHARACTERS = [
-  { id: 'turtle', name: 'צָב', img: 'images/turtle.png', bg: '#b8f0c0' },
-  { id: 'fox', name: 'שׁוּעָל', img: 'images/fox.png', bg: '#ffd6a8' },
-  { id: 'rabbit', name: 'אַרְנָב', img: 'images/rabbit.png', bg: '#ffd1e8' },
-  { id: 'bear', name: 'דֹּב', img: 'images/bear.png', bg: '#d9c3a5' },
+  { id: 'fox', name: 'פִּיצִי', img: 'images/c-fox.png' },
+  { id: 'bear', name: 'בּוּבִּי', img: 'images/c-bear.png' },
+  { id: 'rabbit', name: 'לוּלִי', img: 'images/c-rabbit.png' },
+  { id: 'turtle', name: 'טִיקִי', img: 'images/c-turtle.png' },
+  { id: 'owl', name: 'עֵינַת', img: 'images/c-owl.png' },
+  { id: 'deer', name: 'חֲגִית', img: 'images/c-deer.png' },
+  { id: 'hedgehog', name: 'קוֹצִי', img: 'images/c-hedgehog.png' },
+  // מלך היער מופיע רק בסוף, אחרי שכל השאר נאספו
+  { id: 'lion', name: 'מֶלֶךְ הַיַּעַר', img: 'images/c-lion.png', last: true },
 ];
