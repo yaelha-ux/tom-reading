@@ -118,9 +118,16 @@ h2 { font-size: 28px; margin: 24px 0 12px; text-align: center; }
   font: inherit; font-size: 24px; font-weight: 700; padding: 8px 22px; cursor: pointer;
 }
 .next-btn:active { transform: translateY(2px); }
+.listen-btn {
+  background: #fff; border: 3px solid #4fc3f7; border-radius: 50%; width: 72px; height: 72px;
+  font-size: 34px; cursor: pointer; padding: 0;
+}
+.listen-btn:active { transform: translateY(2px); }
 .mic-btn { background: #4fc3f7; box-shadow: 0 8px 0 #2a9fd0; }
 .mic-btn:active { box-shadow: 0 2px 0 #2a9fd0; }
 .mic-btn.listening { animation: pulse 1s infinite; }
+.mic-btn.done-mode { background: var(--accent); box-shadow: 0 8px 0 var(--accent-dark); animation: none; }
+#medals { touch-action: none; }
 @keyframes pulse { 50% { transform: scale(1.06); } }
 #micMsg { font-size: 30px; font-weight: 700; min-height: 44px; margin: 4px 0 0; color: #c07a1c; }
 #sentence .w { transition: color .3s; }

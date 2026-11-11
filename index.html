@@ -28,12 +28,8 @@
 <section id="reader" class="screen">
   <header class="reader-top">
     <button id="homeBtn" class="icon-btn" aria-label="בית">🏠</button>
+    <!-- לחיצה ארוכה (3 שניות) על המדליות = "הבא" להורים -->
     <div id="medals"></div>
-    <!-- כפתור השמעה מוסתר: צריך ללחוץ ולהחזיק -->
-    <button id="listenBtn" class="secret" aria-label="השמעה (לחיצה ארוכה)">
-      <svg viewBox="0 0 36 36"><circle class="ring" cx="18" cy="18" r="16"/></svg>
-      <span>👂</span>
-    </button>
   </header>
   <!-- טיימר בצד: כמה זמן נשאר לקרוא -->
   <div id="timer">
@@ -47,7 +43,7 @@
   <p id="micMsg"></p>
   <div class="actions">
     <button id="micBtn" class="big-btn mic-btn">🎤 קְרָא בְּקוֹל</button>
-    <button id="readBtn" class="next-btn">הַבָּא ←</button>
+    <button id="listenBtn" class="listen-btn" aria-label="השמעה">🔊</button>
   </div>
 </section>
 

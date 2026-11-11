@@ -139,7 +139,6 @@ function renderSentence() {
     .join('');
 }
 
-$('readBtn').onclick = () => markRead();
 
 function markRead() {
   const { passage } = current;
@@ -187,23 +186,63 @@ function matchWords(sentence, transcripts) {
 const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 // אחרי קריאה מוצלחת במיקרופון, המשפט הבא מתחיל להקשיב לבד
 let listening = false, autoListen = false;
-$('micBtn').onclick = () => startListening();
+const MIC_LABEL = '🎤 קְרָא בְּקוֹל';
+// לחיצה ראשונה מתחילה להקשיב; אחרי 3 שניות הכפתור הופך ל"סִיַּמְתִּי" ולחיצה עליו בודקת
+$('micBtn').onclick = () => (listening ? stopListening() : startListening());
+
+let rec = null, doneTimer;
+function resetMicBtn() {
+  clearTimeout(doneTimer);
+  $('micBtn').textContent = MIC_LABEL;
+  $('micBtn').classList.remove('listening', 'done-mode');
+}
+// עוצרים בלי לבדוק (יציאה לבית / "הבא" של ההורים)
+function cancelListening() {
+  if (!rec || !listening) return;
+  rec.onend = () => { listening = false; resetMicBtn(); };
+  rec.abort();
+}
+function stopListening() {
+  if ($('micBtn').classList.contains('done-mode') && rec) rec.stop();
+}
 
 function startListening() {
-  if (!Recognition) { $('micMsg').textContent = 'הַדַּפְדְּפָן לֹא תּוֹמֵךְ בְּמִיקְרוֹפוֹן, לְחַץ "הַבָּא"'; return; }
+  if (!Recognition) { $('micMsg').textContent = 'הַדַּפְדְּפָן לֹא תּוֹמֵךְ בְּמִיקְרוֹפוֹן'; return; }
   if (listening) return;
-  const rec = new Recognition();
+  rec = new Recognition();
   rec.lang = 'he-IL';
   rec.maxAlternatives = 5;
   rec.interimResults = false;
+  rec.continuous = true; // ממשיכים להקשיב עד שתום לוחץ "סִיַּמְתִּי"
   listening = true;
+  let heard = [], failed = false;
   $('micBtn').classList.add('listening');
   $('micMsg').textContent = 'מַקְשִׁיבָה... 👂';
+  doneTimer = setTimeout(() => {
+    $('micBtn').classList.add('done-mode');
+    $('micBtn').textContent = '✅ סִיַּמְתִּי';
+  }, 3000);
 
   rec.onresult = (e) => {
-    const transcripts = Array.from(e.results[0]).map((r) => r.transcript);
+    // כל קטע שנשמע מוסיף אפשרויות; מחברים את כולן בסוף
+    for (let i = e.resultIndex; i < e.results.length; i++)
+      heard.push(...Array.from(e.results[i]).map((r) => r.transcript));
+  };
+  rec.onerror = (e) => {
+    if (e.error === 'no-speech' || e.error === 'aborted') return;
+    failed = true;
+    autoListen = false;
+    $('micMsg').textContent = e.error === 'not-allowed' ? 'צָרִיךְ לְאַשֵּׁר מִיקְרוֹפוֹן' :
+      e.error === 'network' ? 'אֵין אִינְטֶרְנֶט' : 'לֹא שָׁמַעְתִּי, נְנַסֶּה שׁוּב?';
+  };
+  rec.onend = () => {
+    listening = false;
+    resetMicBtn();
+    if (failed) return;
+    if (!heard.length) { autoListen = false; $('micMsg').textContent = 'לֹא שָׁמַעְתִּי, נְנַסֶּה שׁוּב?'; return; }
+    // גם כל מה שנשמע ברצף, למקרה שהמשפט התפצל לכמה קטעים
     const sentence = current.passage.sentences[current.index];
-    const ok = matchWords(sentence, transcripts);
+    const ok = matchWords(sentence, [...heard, heard.join(' ')]);
     // צובעים כל מילה לפי הזיהוי (מדלגים על סימני פיסוק נפרדים)
     const spans = [...$('sentence').querySelectorAll('.w')].filter((s) => plain(s.textContent).length);
     spans.forEach((s, i) => s.classList.add(ok[i] ? 'ok' : 'miss'));
@@ -217,16 +256,17 @@ function startListening() {
       sadBear();
     }
   };
-  rec.onerror = (e) => {
-    autoListen = false;
-    $('micMsg').textContent = e.error === 'not-allowed' ? 'צָרִיךְ לְאַשֵּׁר מִיקְרוֹפוֹן' :
-      e.error === 'network' ? 'אֵין אִינְטֶרְנֶט, לְחַץ "הַבָּא"' : 'לֹא שָׁמַעְתִּי, נְנַסֶּה שׁוּב?';
-  };
-  rec.onend = () => { listening = false; $('micBtn').classList.remove('listening'); };
   rec.start();
 }
 
-$('homeBtn').onclick = () => { autoListen = false; renderHome(); };
+// "הַבָּא" להורים בלבד: לחיצה ארוכה של 3 שניות על שורת המדליות
+let nextTimer;
+const medals = $('medals');
+medals.addEventListener('pointerdown', () => { nextTimer = setTimeout(() => { cancelListening(); autoListen = false; markRead(); }, 3000); });
+['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => medals.addEventListener(ev, () => clearTimeout(nextTimer)));
+medals.addEventListener('contextmenu', (e) => e.preventDefault());
+
+$('homeBtn').onclick = () => { autoListen = false; cancelListening(); renderHome(); };
 
 function celebrate(icon, text, then) {
   $('celebrateIcon').textContent = icon;
@@ -345,20 +385,13 @@ function speak(text) {
   speechSynthesis.speak(u);
 }
 
-let holdTimer;
-const listenBtn = $('listenBtn');
-listenBtn.addEventListener('pointerdown', (e) => {
-  e.preventDefault();
-  listenBtn.classList.add('holding');
-  holdTimer = setTimeout(() => {
-    listenBtn.classList.remove('holding');
-    speak(current.passage.sentences[current.index]);
-  }, 1500);
-});
-['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) =>
-  listenBtn.addEventListener(ev, () => { clearTimeout(holdTimer); listenBtn.classList.remove('holding'); })
-);
-listenBtn.addEventListener('contextmenu', (e) => e.preventDefault());
+// כפתור השמעה ליד "קרא בקול": משמיע אחרי שנייה
+let speakTimer;
+$('listenBtn').onclick = () => {
+  clearTimeout(speakTimer);
+  const sentence = current.passage.sentences[current.index];
+  speakTimer = setTimeout(() => speak(sentence), 1000);
+};
 
 // ---------- כרטיס גירוד ----------
 function pickPrize() {
@@ -437,7 +470,7 @@ $('doneBtn').onclick = () => {
 renderHome();
 
 // מספר הגרסה מוצג בתחתית מסך הבית; להעלות יחד עם CACHE ב-sw.js
-const APP_VERSION = 19;
+const APP_VERSION = 21;
 $('version').textContent = 'גרסה ' + APP_VERSION;
 
 if ('serviceWorker' in navigator) {
