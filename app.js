@@ -385,13 +385,8 @@ function speak(text) {
   speechSynthesis.speak(u);
 }
 
-// כפתור השמעה ליד "קרא בקול": משמיע אחרי שנייה
-let speakTimer;
-$('listenBtn').onclick = () => {
-  clearTimeout(speakTimer);
-  const sentence = current.passage.sentences[current.index];
-  speakTimer = setTimeout(() => speak(sentence), 1000);
-};
+// כפתור השמעה ליד "קרא בקול"
+$('listenBtn').onclick = () => speak(current.passage.sentences[current.index]);
 
 // ---------- כרטיס גירוד ----------
 function pickPrize() {
@@ -470,7 +465,7 @@ $('doneBtn').onclick = () => {
 renderHome();
 
 // מספר הגרסה מוצג בתחתית מסך הבית; להעלות יחד עם CACHE ב-sw.js
-const APP_VERSION = 23;
+const APP_VERSION = 24;
 $('version').textContent = 'גרסה ' + APP_VERSION;
 
 if ('serviceWorker' in navigator) {
